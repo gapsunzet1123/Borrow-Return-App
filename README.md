@@ -72,75 +72,78 @@ Backend: ส่งข้อมูลที่ได้กลับมาให�
 Frontend: รับข้อมูล JSON มาแสดงผลบนหน้าเว็บ
 
 ขั้นตอนการพัฒนา
+
 1. สร้าง Backend APIคุณต้องสร้างเซิร์ฟเวอร์ด้วยภาษาฝั่งเซิร์ฟเวอร์ที่ถนัด ตัวเลือกที่นิยมได้แก่:
-   Node.js (ใช้ภาษา JavaScript) ร่วมกับเฟรมเวิร์ก Express.js
-   PHP ร่วมกับเฟรมเวิร์กเช่น Laravel หรือ Slim
-   Python ร่วมกับเฟรมเวิร์กเช่น Flask หรือ Django
+- Node.js (ใช้ภาษา JavaScript) ร่วมกับเฟรมเวิร์ก Express.js
+- PHP ร่วมกับเฟรมเวิร์กเช่น Laravel หรือ Slim
+- Python ร่วมกับเฟรมเวิร์กเช่น Flask หรือ Django
+
 ตัวอย่าง API Endpoint ที่ต้องสร้าง (ใช้ Express.js เป็นตัวอย่าง):
-   GET /api/users -> ดึงข้อมูลผู้ใช้ทั้งหมด
-   POST /api/users -> เพิ่มผู้ใช้ใหม่
-   GET /api/procurment -> ดึงข้อมูลอุปกรณ์ทั้งหมด
-   POST /api/procurment -> เพิ่มอุปกรณ์ใหม่
-   PUT /api/procurment/:id -> แก้ไขข้อมูลอุปกรณ์
-   DELETE /api/procurment/:id -> ลบอุปกรณ์
+- `GET /api/users` -> ดึงข้อมูลผู้ใช้ทั้งหมด
+- `POST /api/users` -> เพิ่มผู้ใช้ใหม่
+- `GET /api/procurment` -> ดึงข้อมูลอุปกรณ์ทั้งหมด
+- `POST /api/procurment` -> เพิ่มอุปกรณ์ใหม่
+- `PUT /api/procurment/:id` -> แก้ไขข้อมูลอุปกรณ์
+- `DELETE /api/procurment/:id` -> ลบอุปกรณ์
+   
 2. แก้ไขไฟล์ api.js
 เมื่อ Backend ของคุณพร้อมใช้งานแล้ว คุณจะต้องกลับมาแก้ไขฟังก์ชันในไฟล์ api.js ให้เปลี่ยนจากการเรียกใช้ข้อมูลจำลอง มาเป็นการเรียกใช้ API ของคุณผ่านคำสั่ง fetch
 ตัวอย่างการแก้ไขฟังก์ชัน getProcurment:
 
 ของเดิม (จากข้อมูลจำลอง):
 
-import { procurment } from './database.js';
-
-export async function getProcurment() {
-    return Promise.resolve([...procurment]);
-}
+      import { procurment } from './database.js';
+      
+      export async function getProcurment() {
+          return Promise.resolve([...procurment]);
+      }
 
 ของใหม่ (เรียกใช้ API จริง):
 
-// ไม่ต้อง import procurment จาก database.js อีกต่อไป
-
-export async function getProcurment() {
-    try {
-        // แก้ไข URL เป็นที่อยู่ของ Backend API ของคุณ
-        const response = await fetch('http://localhost:3000/api/procurment'); 
-        if (!response.ok) {
-            throw new Error('Network response was not ok');
-        }
-        const data = await response.json();
-        return data;
-    } catch (error) {
-        console.error('Failed to fetch procurment:', error);
-        return []; // คืนค่าเป็น array ว่างหากเกิดข้อผิดพลาด
-    }
-}
+      // ไม่ต้อง import procurment จาก database.js อีกต่อไป
+      
+      export async function getProcurment() {
+          try {
+              // แก้ไข URL เป็นที่อยู่ของ Backend API ของคุณ
+              const response = await fetch('http://localhost:3000/api/procurment'); 
+              if (!response.ok) {
+                  throw new Error('Network response was not ok');
+              }
+              const data = await response.json();
+              return data;
+          } catch (error) {
+              console.error('Failed to fetch procurment:', error);
+              return []; // คืนค่าเป็น array ว่างหากเกิดข้อผิดพลาด
+          }
+      }
 
 ตัวอย่างการแก้ไขฟังก์ชัน saveProcurment (เพิ่ม/แก้ไข):
 
-export async function saveProcurment(itemData) {
-    const isEditing = !!itemData.id;
-    const url = isEditing 
-        ? `http://localhost:3000/api/procurment/${itemData.id}` 
-        : 'http://localhost:3000/api/procurment';
-    
-    const method = isEditing ? 'PUT' : 'POST';
-
-    try {
-        const response = await fetch(url, {
-            method: method,
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(itemData),
-        });
-        if (!response.ok) {
-            throw new Error('Failed to save procurment');
-        }
-        return await response.json();
-    } catch (error) {
-        console.error('Error saving procurment:', error);
-        throw error; // ส่งต่อ error ให้ส่วนที่เรียกใช้จัดการ
-    }
-}
+      export async function saveProcurment(itemData) {
+          const isEditing = !!itemData.id;
+          const url = isEditing 
+              ? `http://localhost:3000/api/procurment/${itemData.id}` 
+              : 'http://localhost:3000/api/procurment';
+          
+          const method = isEditing ? 'PUT' : 'POST';
+      
+          try {
+              const response = await fetch(url, {
+                  method: method,
+                  headers: {
+                      'Content-Type': 'application/json',
+                  },
+                  body: JSON.stringify(itemData),
+              });
+              if (!response.ok) {
+                  throw new Error('Failed to save procurment');
+              }
+              return await response.json();
+          } catch (error) {
+              console.error('Error saving procurment:', error);
+              throw error; // ส่งต่อ error ให้ส่วนที่เรียกใช้จัดการ
+          }
+      }
 
 คุณจะต้องแก้ไขทุกฟังก์ชันใน api.js ให้เป็นลักษณะนี้ ส่วน script.js ที่เรียกใช้ฟังก์ชันเหล่านี้ ไม่ต้องแก้ไขอะไรเลย เพราะเราได้ออกแบบให้มันเป็น async/await รอไว้อยู่แล้ว นี่คือข้อดีของการแยก Data Layer ออกมาครับ
 
